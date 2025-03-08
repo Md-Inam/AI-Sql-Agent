@@ -17,6 +17,8 @@ Google Gemini API key
 
 🚀 How to Use?
 1️⃣ Clone this repository
+
+
 git clone https://github.com/Md-Inam/ai-sql-agent.git
 cd ai-sql-agent
 
