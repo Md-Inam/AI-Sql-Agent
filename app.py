@@ -4,62 +4,41 @@ from sqlalchemy import create_engine
 from langchain.utilities import SQLDatabase
 from langchain_google_genai import ChatGoogleGenerativeAI as GenAI
 from langchain_community.agent_toolkits import create_sql_agent
-import streamlit as st
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
 
-# Streamlit UI Layout
-st.set_page_config(layout="wide")  # Make layout wider
+# Set up Google Gemini API key (Replace with your actual API key)
+os.environ["GOOGLE_API_KEY"] = "your-google-api-key-here"
 
-# Sidebar: Gemini API Key Input (Top Left)
-st.sidebar.title("🔑 Enter Gemini API Key")
-google_api_key = st.sidebar.text_input("API Key", type="password")
+# Create SQLite database and load dataset
+csv_path = "data.csv"  # Change this to your actual CSV file
+df = pd.read_csv(csv_path)
 
-# Sidebar: File Upload
-st.sidebar.title("📂 Upload File")
-uploaded_file = st.sidebar.file_uploader("Choose a CSV or Excel file", type=["csv", "xlsx"])
+# Create SQLite database engine
+engine = create_engine("sqlite:///database.db")
+df.to_sql("sales_data", engine, index=False, if_exists='replace')
 
-if google_api_key and uploaded_file:
-    os.environ["GOOGLE_API_KEY"] = google_api_key  # Set API Key
+# Initialize SQL database
+db = SQLDatabase(engine=engine)
 
-    # Load the dataset
-    file_ext = uploaded_file.name.split(".")[-1]
-    
-    if file_ext == "csv":
-        df = pd.read_csv(uploaded_file)
-    elif file_ext == "xlsx":
-        df = pd.read_excel(uploaded_file, engine="openpyxl")
-    
-    # Create SQLite database
-    engine = create_engine("sqlite:///uploaded_data.db")
-    df.to_sql("uploaded_table", engine, index=False, if_exists='replace')
+# Initialize AI Model
+llm = GenAI(model="gemini-1.5-flash", temperature=0, google_api_key=os.environ["GOOGLE_API_KEY"])
 
-    # Initialize SQL database
-    db = SQLDatabase(engine=engine)
+# Create SQL Agent
+agent_executor = create_sql_agent(llm, db=db, verbose=True, return_intermediate_steps=True)
 
-    # Initialize AI Model
-    llm = GenAI(model="gemini-1.5-flash", temperature=0, google_api_key=os.environ["GOOGLE_API_KEY"])
+# Function to get SQL query instead of executing it
+def get_sql_query(question):
+    response = agent_executor.invoke({"input": question})
+    return response["intermediate_steps"][0]["query"]
 
-    # Create Text-to-SQL Agent
-    agent_executor = create_sql_agent(llm, db=db, verbose=True, return_intermediate_steps=True)
+# Example Usage
+if __name__ == "__main__":
+    user_question = "Show all sales from 2023"
+    sql_query = get_sql_query(user_question)
+    print("Generated SQL Query:")
+    print(sql_query)
 
-    # Center Layout
-    col1, col2, col3 = st.columns([1, 3, 1])
-
-    with col2:
-        st.title("🤖 AI Agent Text-to-SQL")
-        query = st.text_input("Enter your query:")
-
-        if query:
-            response = agent_executor.run(query)
-            st.write("### SQL Query Result:")
-            st.write(response)
-
-elif not google_api_key:
-    st.sidebar.warning("⚠️ Please enter your Gemini API Key.")
-
-elif not uploaded_file:
-    st.sidebar.info("📂 Upload a file to get started.")
 
