@@ -40,6 +40,8 @@ streamlit run app.py
 
 
 🛠 Tech Stack
+
+
 Python (Pandas, SQLAlchemy, Streamlit)
 
 
