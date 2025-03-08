@@ -27,6 +27,8 @@ git clone https://github.com/Md-Inam/ai-sql-agent.git
 cd ai-sql-agent
 
 2️⃣ Install dependencies
+
+
 pip install -r requirements.txt
 
 3️⃣ Run the Streamlit app
