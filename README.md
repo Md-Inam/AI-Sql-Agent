@@ -32,6 +32,8 @@ cd ai-sql-agent
 pip install -r requirements.txt
 
 3️⃣ Run the Streamlit app
+
+
 streamlit run app.py
 
 4️⃣ Upload a CSV file, enter your query, and get the SQL command!
