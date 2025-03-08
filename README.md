@@ -41,5 +41,11 @@ streamlit run app.py
 
 🛠 Tech Stack
 Python (Pandas, SQLAlchemy, Streamlit)
+
+
 Google Gemini AI (Natural Language Processing)
+
+
 SQLite (Lightweight Database)
+
+
