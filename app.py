@@ -16,15 +16,28 @@ st.set_page_config(layout="wide")
 # Sidebar for API Key & File Upload
 st.sidebar.title("🔑 API Key & File Upload")
 api_key = st.sidebar.text_input("Enter your Google API Key", type="password")
-uploaded_file = st.sidebar.file_uploader("Upload a CSV file", type=["csv"])
+uploaded_file = st.sidebar.file_uploader("Upload a CSV or Excel file", type=["csv", "xlsx"])
 
 # Main UI
 st.title("🧠 AI-Powered SQL Agent")
-st.write("Ask questions in plain English and get both the **SQL query** and the **result**!")
+st.write("Ask questions in plain English and get instant results!")
 
-# Use default data if no file is uploaded
+# Handle file upload
 if uploaded_file:
-    df = pd.read_csv(uploaded_file)
+    file_extension = uploaded_file.name.split(".")[-1]
+
+    try:
+        if file_extension == "csv":
+            df = pd.read_csv(uploaded_file)
+        elif file_extension == "xlsx":
+            df = pd.read_excel(uploaded_file, engine="openpyxl")  # Ensures compatibility with different Excel formats
+        else:
+            st.error("Unsupported file format. Please upload a CSV or Excel file.")
+            st.stop()
+    except Exception as e:
+        st.error(f"⚠️ Error reading file: {str(e)}")
+        st.stop()
+
 else:
     # Default dataset
     data = {
@@ -64,27 +77,10 @@ if query:
             st.subheader("🛠 Debug: Full Response")
             st.json(response)  # Display full response for debugging
 
-            # Extract SQL query from AI response
-            sql_command = None
-            if isinstance(response, dict):
-                if "sql_cmd" in response:
-                    sql_command = response["sql_cmd"]
-                elif "intermediate_steps" in response and response["intermediate_steps"]:
-                    for step in response["intermediate_steps"]:
-                        if isinstance(step, tuple) and len(step) > 1 and "query" in step[1]:
-                            sql_command = step[1]["query"]
-                            break
-
-            if not sql_command:
-                sql_command = "⚠️ No SQL command was generated. Check the debug output above."
-
             # Extract Query Result
             query_result = response.get("output", "⚠️ No result available.")
 
-            # Display SQL Query & Result
-            st.subheader("🔍 Generated SQL Query")
-            st.code(sql_command, language="sql")
-
+            # Display Result
             st.subheader("📊 Query Result")
             st.write(query_result)
 
