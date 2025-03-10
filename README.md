@@ -8,11 +8,22 @@ Conda
 Google Gemini API key
 
 🛠 Features
+
+
 ✅ Upload any CSV file to create a temporary database
+
+
 ✅ Enter queries in plain English, get SQL queries as output
+
+
 ✅ Supports SQLite for easy database handling
+
+
 ✅ Uses Google Gemini AI for accurate text-to-SQL conversion
+
+
 ✅ Simple and interactive Streamlit UI
+
 
 
 🚀 How to Use?
