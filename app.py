@@ -1,19 +1,4 @@
 import os
-import sys
-import subprocess
-
-# Install openpyxl if not already installed
-try:
-    import openpyxl
-except ImportError:
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "openpyxl"])
-    import openpyxl
-
-import pandas as pd
-import streamlit as st
-
-
-import os
 import pandas as pd
 import streamlit as st
 from sqlalchemy import create_engine
