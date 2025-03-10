@@ -26,7 +26,7 @@ st.write("Ask questions in plain English and get both the **SQL query** and the 
 if uploaded_file:
     df = pd.read_csv(uploaded_file)
 else:
-    # Default sample data (Replace with a relevant dataset)
+    # Default dataset
     data = {
         "ID": [1, 2, 3, 4, 5],
         "Name": ["Alice", "Bob", "Charlie", "David", "Emma"],
@@ -60,18 +60,23 @@ if query:
             # AI Processing
             response = agent_executor(query)
 
+            # Debugging: Show full response
+            st.subheader("🛠 Debug: Full Response")
+            st.json(response)  # Display full response for debugging
+
             # Extract SQL query from AI response
             sql_command = None
-            if "sql_cmd" in response:
-                sql_command = response["sql_cmd"]
-            elif "intermediate_steps" in response and response["intermediate_steps"]:
-                for step in response["intermediate_steps"]:
-                    if isinstance(step, tuple) and len(step) > 1 and "query" in step[1]:
-                        sql_command = step[1]["query"]
-                        break
+            if isinstance(response, dict):
+                if "sql_cmd" in response:
+                    sql_command = response["sql_cmd"]
+                elif "intermediate_steps" in response and response["intermediate_steps"]:
+                    for step in response["intermediate_steps"]:
+                        if isinstance(step, tuple) and len(step) > 1 and "query" in step[1]:
+                            sql_command = step[1]["query"]
+                            break
 
             if not sql_command:
-                sql_command = "⚠️ No SQL command was generated."
+                sql_command = "⚠️ No SQL command was generated. Check the debug output above."
 
             # Extract Query Result
             query_result = response.get("output", "⚠️ No result available.")
@@ -82,8 +87,9 @@ if query:
 
             st.subheader("📊 Query Result")
             st.write(query_result)
+
         else:
-            # Process query using Pandas when no API key is provided
+            # Pandas Fallback Query Execution
             st.warning("⚠️ AI is disabled. Running query using Pandas.")
 
             # Try to execute the query manually on DataFrame
