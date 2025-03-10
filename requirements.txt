@@ -1,7 +1,7 @@
-streamlit
+openpyxl
 pandas
 sqlalchemy
+streamlit
 langchain
 langchain_google_genai
 langchain_community
-python-dotenv
