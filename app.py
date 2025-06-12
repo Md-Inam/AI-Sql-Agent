@@ -73,10 +73,45 @@ if query:
             # AI Processing
             response = agent_executor(query)
 
-            # Debugging: Show full response
-            st.subheader("🛠 Debug: Full Response")
-            st.json(response)  # Display full response for debugging
+            # Debugging: Show full response (moved into an expander)
+            with st.expander("🛠 Debug: Full Agent Response"):
+                st.json(response)
 
+            # Extract and Display SQL Query
+            if "intermediate_steps" in response:
+                try:
+                    # Assuming the SQL query is the first part of the first tuple in intermediate_steps
+                    sql_query_step = response["intermediate_steps"][0]
+                    if isinstance(sql_query_step, tuple) and len(sql_query_step) > 1:
+                        # The actual SQL query might be nested if action_log is present
+                        action_log = sql_query_step[0]
+                        if hasattr(action_log, 'tool_input') and isinstance(action_log.tool_input, str) :
+                            sql_query = action_log.tool_input
+                        elif isinstance(sql_query_step[1], str) : # Fallback if no action_log or tool_input
+                            sql_query = sql_query_step[1]
+                        else: # Deeper nesting or different structure
+                            # Attempt to find a string that looks like a SQL query
+                            sql_query = "Could not reliably extract SQL query. Check debug response."
+                            for item in sql_query_step:
+                                if isinstance(item, str) and ("SELECT" in item.upper() or "INSERT" in item.upper() or "UPDATE" in item.upper() or "DELETE" in item.upper()):
+                                    sql_query = item
+                                    break
+                                elif isinstance(item, dict) and 'query' in item: # Langchain SQLDatabaseTool sometimes returns a dict
+                                    sql_query = item['query']
+                                    break
+
+
+                    elif isinstance(sql_query_step, str): # Simpler case if it's just a string
+                        sql_query = sql_query_step
+                    else:
+                        sql_query = "SQL query format not recognized in intermediate_steps."
+
+                    st.subheader("Generated SQL Query")
+                    st.code(sql_query, language="sql")
+                except Exception as e:
+                    st.warning(f"Could not extract SQL query from intermediate steps: {str(e)}")
+
+            st.divider() # Visually separate SQL query from results
             # Extract Query Result
             query_result = response.get("output", "⚠️ No result available.")
 
