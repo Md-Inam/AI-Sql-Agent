@@ -5,3 +5,4 @@ streamlit
 langchain
 langchain_google_genai
 langchain_community
+altair==4.2.2
