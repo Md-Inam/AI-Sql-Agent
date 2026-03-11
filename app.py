@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import streamlit as st
 from sqlalchemy import create_engine
-from langchain.utilities import SQLDatabase
+from langchain_community.utilities import SQLDatabase
 from langchain_google_genai import ChatGoogleGenerativeAI as GenAI
 from langchain_community.agent_toolkits import create_sql_agent
 from dotenv import load_dotenv
